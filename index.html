@@ -79,27 +79,43 @@ summary{cursor:pointer;font-weight:600;min-height:36px;display:flex;align-items:
 @media(max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.roster{border-right:0;border-bottom:1px solid var(--line);padding:10px 12px}#list{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px}#list li{flex:none}.stu{width:auto}}
 @media(max-width:600px){.top{align-items:flex-start}.acts{width:100%}.acts .btn{flex:1 1 auto}}
 @media(prefers-reduced-motion:no-preference){.pen textarea.busy{animation:pulse 1.4s ease-in-out infinite}@keyframes pulse{50%{border-color:var(--pen)}}}
+.tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.tag.go{border-color:var(--ai);color:var(--ai)}
+.tag.done{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.stu .sub{display:block;font-size:12px;color:var(--mute)}
+.solo{max-width:780px;margin:0 auto;padding:24px 16px 64px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 20px;padding:0;counter-reset:st}
+.steps li{counter-increment:st;font-size:14px;color:var(--mute);padding:6px 12px 6px 8px;border-radius:99px;border:1px solid var(--line);display:flex;gap:6px;align-items:center}
+.steps li::before{content:counter(st);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--side)}
+.steps li.now{color:var(--ink);border-color:var(--ink);font-weight:600}
+.steps li.now::before{background:var(--ink);color:var(--bg)}
+.steps li.ok::before{content:"✓";background:var(--ai);color:#fff}
+.wait{border:1px dashed var(--line);border-radius:14px;padding:18px;color:var(--mute);margin:0 0 18px}
+.wait b{display:block;color:var(--ink);margin-bottom:4px}
+.fbc{border:1px solid var(--line);border-left:4px solid var(--pen);border-radius:12px;padding:12px 16px;white-space:pre-wrap;line-height:1.7}
+.fbc b{display:block;color:var(--pen);margin-bottom:4px;white-space:normal}
+.fbs{display:grid;gap:12px;margin-bottom:22px}
+.read{white-space:pre-wrap;font:17px/2em "Noto Serif KR",Batang,serif;background:repeating-linear-gradient(to bottom,transparent 0 calc(2em - 1px),var(--rule) calc(2em - 1px) 2em);min-height:6em}
+.sec{margin:26px 0 10px;font-size:18px}
+.draft{opacity:.7}
+.read{background-origin:content-box}
+.acts[hidden],.ov[hidden]{display:none}
 </style>
 </head>
 <body>
 <header class="top">
   <div><h1>나노입자실험_글쓰기_피드백</h1><p class="q" id="q">과제를 불러오는 중이에요.</p></div>
-  <div class="acts">
+  <div class="acts" id="acts" hidden>
     <div class="seg" id="rounds" aria-label="차수"><button type="button" data-r="1" class="on">1차 글</button><button type="button" data-r="2">2차 수정본</button></div>
     <button type="button" class="btn ghost" id="bulk" hidden>AI 피드백 모두 만들기</button>
     <button type="button" class="btn ghost" id="dlAll">피드백지 모두 받기</button>
     <button type="button" class="btn ghost" id="setB" hidden>과제 설정</button>
-    <button type="button" class="btn" id="addB" hidden>학생 추가</button>
   </div>
 </header>
 <p class="note" id="note" hidden></p>
-<main class="wrap">
-  <aside class="roster"><div class="rh"><span>학생</span><span>글 · AI · 전문가 1 · 2</span></div><ul id="list"></ul></aside>
-  <section class="ws" id="ws"><div class="empty"><b>불러오는 중</b>잠시만 기다려 주세요.</div></section>
-</main>
-<div class="ov" id="ovAdd" hidden><form class="dlg" id="fAdd"><h3>학생 추가</h3><label for="addT">한 줄에 한 명씩, 실명 대신 번호나 가명으로 적어 주세요</label><textarea id="addT" placeholder="1번&#10;2번&#10;3번"></textarea><div class="row"><button class="btn" type="submit">추가</button><button class="btn ghost" type="button" data-close>취소</button></div></form></div>
+<main id="main"><div class="solo"><div class="empty"><b>불러오는 중</b>잠시만 기다려 주세요.</div></div></main>
 <div class="ov" id="ovSet" hidden><form class="dlg" id="fSet"><h3>과제 설정</h3><label>과제 질문<textarea id="sQ"></textarea></label><label>평가 기준 (AI 피드백에 쓰여요)<textarea id="sC"></textarea></label><label>실험 자료 요약 (AI 피드백에 쓰여요)<textarea id="sX"></textarea></label><div class="two"><label>전문가 1 이름<input id="sE1"></label><label>전문가 2 이름<input id="sE2"></label></div><div class="row"><button class="btn" type="submit">저장</button><button class="btn ghost" type="button" data-close>취소</button></div></form></div>
-<div class="ov" id="ovDel" hidden><div class="dlg"><h3 id="delT">학생을 지울까요?</h3><p class="meta">이 학생의 1차·2차 글과 모든 피드백이 함께 지워져요. 되돌릴 수 없어요.</p><div class="row"><button class="btn red" type="button" id="delOk">지우기</button><button class="btn ghost" type="button" data-close>취소</button></div></div></div>
+<div class="ov" id="ovOk" hidden><div class="dlg"><h3 id="okT"></h3><p class="meta" id="okM"></p><div class="row"><button class="btn" type="button" id="okGo"></button><button class="btn ghost" type="button" data-close>취소</button></div></div></div>
 <script>
 {
 const $=s=>document.querySelector(s);
@@ -111,59 +127,156 @@ const DEF={
   context:'1. 은거울 반응: 질산은과 암모니아수로 만든 용액에 포도당을 넣자 시험관 벽에 은색 거울이 생김\n2. 은 나노입자 합성: 질산은에 수소화붕소나트륨을 넣자 투명한 노란 용액이 됨 (시간이 지나 뭉치면 색이 변함)\n3. 틴들 현상: 나노입자 용액과 같은 색으로 만든 식용 색소 용액에 레이저를 비추자 나노입자 용액에서만 빛줄기가 보임\n4. 금 나노입자 합성과 UV 측정: 환원제 농도에 따라 붉은색에서 보라색까지 달라지고, 최대 흡수 파장이 약 520nm에서 더 긴 쪽으로 이동함\n5. 리쿠르고스 컵: 4세기 로마 유리잔. 앞에서 빛을 비추면 초록, 뒤에서 비추면 빨강으로 보임',
   e1Name:'전문가 1',e2Name:'전문가 2'
 };
-const S={cfg:{},students:[],essays:new Map(),fb:new Map(),sel:null,round:1,dirty:new Set(),busy:new Set(),me:null,admin:false,canW:true,names:{}};
-let db=null,user=null,sample=null,dl=null,built=null,running=false,stop=false;
+/* data
+   subs/<uid>   student's own: {label,t1,s1,t2,s2,u1,u2}  (student writes own; teacher/experts read)
+   drafts/<uid>_<r>_<slot>  feedback being written: {text,updatedAt,by,src}  (teacher/experts only)
+   sent/<uid>   feedback handed to the student: {r1:{ai,e1,e2,at},r2:{...}}  (student reads own) */
+const S={cfg:{},subs:new Map(),drafts:new Map(),sent:new Map(),sel:null,round:1,dirty:new Set(),busy:new Set(),me:null,admin:false,owner:false,names:{},mine:undefined,mySent:null};
+let db=null,user=null,sample=null,dl=null,built=null,running=false,stop=false,okFn=null,roW=false;
 const timers={},pending={},chain={},asked=new Set();
-try{const o=JSON.parse(localStorage.getItem('fbroom')||'{}');S.sel=o.sel||null;S.round=o.round===2?2:1}catch(e){}
-const remember=()=>{try{localStorage.setItem('fbroom',JSON.stringify({sel:S.sel,round:S.round}))}catch(e){}};
+try{const o=JSON.parse(localStorage.getItem('fbroom2')||'{}');S.sel=o.sel||null;S.round=o.round===2?2:1}catch(e){}
+const remember=()=>{try{localStorage.setItem('fbroom2',JSON.stringify({sel:S.sel,round:S.round}))}catch(e){}};
 const cfg=k=>typeof S.cfg[k]==='string'&&S.cfg[k].trim()?S.cfg[k]:DEF[k];
-const eKey=(sid,r)=>sid+'_'+r;
-const fKey=(sid,r,sl)=>sid+'_'+r+'_'+sl;
-const essay=(sid,r)=>(S.essays.get(eKey(sid,r))||{}).text||'';
-const fbt=(sid,r,sl)=>(S.fb.get(fKey(sid,r,sl))||{}).text||'';
+const dKey=(sid,r,sl)=>sid+'_'+r+'_'+sl;
+const sub=sid=>S.subs.get(sid)||{};
+const txt=(sid,r)=>String(sub(sid)['t'+r]||'');
+const subm=(sid,r)=>!!sub(sid)['s'+r];
+const dft=(sid,r,sl)=>(S.drafts.get(dKey(sid,r,sl))||{}).text||'';
+const sentR=(sid,r)=>(S.sent.get(sid)||{})['r'+r]||null;
 const penName=sl=>sl==='ai'?'AI 피드백':cfg(sl+'Name');
 const note=t=>{const n=$('#note');n.textContent=t||'';n.hidden=!t};
-const sorted=()=>[...S.students].sort((a,b)=>(a.order||0)-(b.order||0)||String(a.label).localeCompare(String(b.label),'ko'));
+const sorted=()=>[...S.subs.entries()].map(([id,d])=>Object.assign({},d,{id})).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)||String(a.label).localeCompare(String(b.label),'ko'));
 const when=t=>{const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
-const live=(sid,r)=>sid===S.sel&&r===S.round&&$('#essay');
-const field=k=>k==='essay'?$('#essay'):$('#t-'+k);
-const stat=(k,t)=>{const el=document.getElementById(k==='essay'?'em':'m-'+k);if(el)el.textContent=t};
+const stat=(k,t)=>{const el=document.getElementById('m-'+k);if(el)el.textContent=t};
 const openOv=id=>{const o=$('#'+id);o.hidden=false;const f=o.querySelector('textarea,input,.btn');f&&f.focus()};
 const closeOv=()=>document.querySelectorAll('.ov').forEach(o=>o.hidden=true);
+const ask=(title,msg,go,fn)=>{$('#okT').textContent=title;$('#okM').textContent=msg;$('#okGo').textContent=go;okFn=fn;openOv('ovOk')};
+const errMsg=e=>e&&e.code==='invalid_argument'?'저장 권한이 없어요.':e&&e.code==='quota_exceeded'?'저장 공간이 가득 찼어요.':'저장하지 못했어요. 잠시 뒤 다시 해 보세요.';
+const fbCards=(o,names)=>SLOTS.map(sl=>`<div class="fbc" style="--pen:var(--${sl})"><b>${esc(names[sl])}</b>${esc(o&&o[sl]||'')||'<span class="meta">(이 피드백은 없어요)</span>'}</div>`).join('');
 
 function renderTop(){
   $('#q').textContent=cfg('question');
   document.querySelectorAll('#rounds button').forEach(b=>b.classList.toggle('on',+b.dataset.r===S.round));
-  document.querySelectorAll('.pen[data-slot]').forEach(p=>{p.querySelector('h3 span').textContent=penName(p.dataset.slot)});
+}
+function chain1(path,fn){chain[path]=(chain[path]||Promise.resolve()).then(fn);return chain[path]}
+function queue(k,fn){clearTimeout(timers[k]);stat(k,'입력 중…');pending[k]=fn;timers[k]=setTimeout(()=>{const f=pending[k];delete pending[k];if(f)f()},1200)}
+function flush(){return Promise.all(Object.keys(pending).map(k=>{clearTimeout(timers[k]);const f=pending[k];delete pending[k];return f()}))}
+
+/* ───────── student ───────── */
+function stuStage(){
+  const m=S.mine,sn=S.mySent||{};
+  if(!m)return 0;
+  if(!m.s1)return 1;
+  if(!sn.r1)return 2;
+  if(!m.s2)return 3;
+  if(!sn.r2)return 4;
+  return 5;
+}
+let stuBuilt=null;
+function renderStudent(){
+  const main=$('#main');
+  if(S.mine===undefined)return;
+  const st=stuStage();
+  const key=st+'|'+(S.mine&&S.mine.label);
+  if(key===stuBuilt){fillStudent();return}
+  stuBuilt=key;S.dirty.clear();
+  const steps=['1차 글 쓰기','피드백 받기','수정본 쓰기','최종 피드백'];
+  const on=[0,0,1,2,3,3][st];
+  const stepsH=`<ol class="steps">${steps.map((t,i)=>`<li class="${i<on||st===5?'ok':i===on?'now':''}">${t}</li>`).join('')}</ol>`;
+  const sn=S.mySent||{},m=S.mine||{};
+  const names={ai:penName('ai'),e1:penName('e1'),e2:penName('e2')};
+  let h='';
+  if(st===0){
+    h=`<form id="fJoin" class="sheet"><h2 style="margin-bottom:6px">시작하기</h2><p class="meta" style="margin:0 0 12px">선생님이 알려 준 번호나 가명을 적어 주세요. 실명은 쓰지 않아요.</p><div class="row"><input id="jn" maxlength="40" required style="flex:1 1 200px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg)" placeholder="예: 3번"><button class="btn" type="submit">시작</button></div></form>`;
+  }else{
+    h=`<div class="wsh"><h2>${esc(m.label)}</h2><span class="meta" id="m-w"></span></div>${stepsH}`;
+    if(st===1||st===3){
+      const r=st===1?1:2;
+      if(r===2)h+=`<h3 class="sec">1차 글에 받은 피드백</h3><div class="fbs">${fbCards(sn.r1,names)}</div>`;
+      h+=`<div class="sheet"><div class="bar"><b>${r===1?'1차 글':'2차 수정본'}</b><span class="meta" id="cc"></span><span class="meta" id="m-essay"></span></div>
+      <textarea class="essay" id="essay" aria-label="${r===1?'1차 글':'2차 수정본'}" placeholder="${r===1?'과제를 읽고 내 주장과 근거를 써 보세요. 쓰는 동안 자동으로 저장돼요.':'피드백을 읽고 1차 글을 고쳐 써 보세요. 자동으로 저장돼요.'}"></textarea>
+      ${r===2?'<details><summary>1차 글 다시 보기</summary><div class="read" style="font-size:16px">'+esc(m.t1)+'</div></details>':''}</div>
+      <div class="row"><button class="btn" type="button" id="subB">${r===1?'1차 글 제출하기':'수정본 제출하기'}</button><span class="meta">제출하면 더 고칠 수 없어요.</span></div>`;
+    }else if(st===2){
+      h+=`<div class="wait"><b>1차 글을 제출했어요</b>AI와 전문가 선생님들이 피드백을 쓰고 있어요. 피드백이 오면 이 화면에 바로 나타나요.</div><h3 class="sec">내가 제출한 글</h3><div class="sheet read">${esc(m.t1)}</div>`;
+    }else if(st===4){
+      h+=`<div class="wait"><b>수정본을 제출했어요</b>최종 피드백을 기다려 주세요. 오면 이 화면에 바로 나타나요.</div><h3 class="sec">내가 제출한 수정본</h3><div class="sheet read">${esc(m.t2)}</div><details><summary>1차 글과 받은 피드백</summary><div class="read" style="font-size:16px;margin-bottom:12px">${esc(m.t1)}</div><div class="fbs">${fbCards(sn.r1,names)}</div></details>`;
+    }else{
+      h+=`<div class="wait" style="border-style:solid"><b>모두 끝났어요</b>수정본에 대한 최종 피드백을 읽어 보세요.</div><h3 class="sec">수정본에 받은 피드백</h3><div class="fbs">${fbCards(sn.r2,names)}</div><h3 class="sec">내 수정본</h3><div class="sheet read">${esc(m.t2)}</div><details><summary>1차 글과 받은 피드백</summary><div class="read" style="font-size:16px;margin-bottom:12px">${esc(m.t1)}</div><div class="fbs">${fbCards(sn.r1,names)}</div></details>`;
+    }
+  }
+  main.innerHTML=`<div class="solo">${h}</div>`;
+  const fj=$('#fJoin');
+  if(fj)fj.addEventListener('submit',async e=>{e.preventDefault();const v=$('#jn').value.trim().slice(0,40);if(!v)return;
+    try{await db.doc('subs/'+S.me).set({label:v,t1:'',s1:null,t2:'',s2:null,createdAt:Date.now()})}catch(err){note(err&&err.code==='invalid_argument'?'글을 쓸 권한이 없어요. 선생님에게 이 페이지의 ‘참여’ 권한을 받아 주세요.':errMsg(err))}});
+  const ta=$('#essay');
+  if(ta){
+    const r=st===1?1:2;
+    ta.value=r===2?(m.t2||m.t1||''):(m.t1||'');
+    if(roW){ta.readOnly=true}
+    ta.addEventListener('input',()=>{S.dirty.add('essay');count();const v=ta.value;queue('essay',()=>saveMine(r,v))});
+    count();
+    $('#subB').addEventListener('click',()=>{
+      if(!ta.value.trim()){stat('essay','글을 먼저 써 주세요.');return}
+      ask(r===1?'1차 글을 제출할까요?':'수정본을 제출할까요?','제출하면 더 고칠 수 없어요. 선생님이 다시 열어 주면 고칠 수 있어요.','제출하기',async()=>{
+        clearTimeout(timers.essay);delete pending.essay;
+        const v=ta.value;
+        try{await chain1('subs/'+S.me,()=>db.doc('subs/'+S.me).update({['t'+r]:v,['s'+r]:Date.now(),['u'+r]:Date.now()}));S.dirty.delete('essay')}catch(err){stat('essay',errMsg(err))}
+      });
+    });
+  }
+  fillStudent();
+}
+function fillStudent(){
+  const m=S.mine;if(!m)return;
+  const st=stuStage(),r=st===1?1:st===3?2:0;
+  if(r&&m['u'+r]&&!S.dirty.has('essay'))stat('essay','마지막 저장 '+when(m['u'+r]));
+}
+function saveMine(r,v){
+  return chain1('subs/'+S.me,()=>db.doc('subs/'+S.me).update({['t'+r]:v,['u'+r]:Date.now()})).then(()=>{if($('#essay')&&$('#essay').value===v&&!pending.essay){S.dirty.delete('essay');stat('essay','저장됨')}},e=>{stat('essay',errMsg(e));if(e&&e.code==='invalid_argument'){roW=true;const t=$('#essay');if(t)t.readOnly=true}});
+}
+function count(){const t=$('#essay');if(t&&$('#cc'))$('#cc').textContent=t.value.replace(/\s/g,'').length+'자 (공백 제외)'}
+
+/* ───────── teacher & experts ───────── */
+function status(sid,r){
+  if(sentR(sid,r))return ['보냄','done'];
+  if(subm(sid,r))return ['제출함','go'];
+  if(r===2&&!sentR(sid,1))return ['1차 진행 중',''];
+  return [txt(sid,r).trim()?'쓰는 중':'시작 전',''];
 }
 function renderList(){
   const L=sorted(),r=S.round;
   $('#list').innerHTML=L.length?L.map(s=>{
-    const parts=[['',essay(s.id,r),'글'],['ai',fbt(s.id,r,'ai'),'AI'],['e1',fbt(s.id,r,'e1'),penName('e1')],['e2',fbt(s.id,r,'e2'),penName('e2')]];
-    const dots=parts.map(([c,t])=>`<span class="d${t.trim()?' f':''}"${c?` style="--c:var(--${c})"`:''}></span>`).join('');
-    const tip=parts.map(([,t,n])=>n+(t.trim()?' 있음':'없음')).join(', ');
-    return `<li><button type="button" class="stu${s.id===S.sel?' on':''}" data-id="${esc(s.id)}" title="${esc(tip)}" aria-label="${esc(s.label+', '+tip)}"><span class="nm">${esc(s.label)}</span><span class="dots" aria-hidden="true">${dots}</span></button></li>`;
-  }).join(''):'<li class="meta" style="padding:8px">아직 학생이 없어요.</li>';
+    const [t,c]=status(s.id,r);
+    const parts=[['ai',dft(s.id,r,'ai')],['e1',dft(s.id,r,'e1')],['e2',dft(s.id,r,'e2')]];
+    const dots=parts.map(([c,t])=>`<span class="d${t.trim()?' f':''}" style="--c:var(--${c})"></span>`).join('');
+    return `<li><button type="button" class="stu${s.id===S.sel?' on':''}" data-id="${esc(s.id)}" aria-label="${esc(s.label+', '+t)}"><span class="nm">${esc(s.label)}<span class="sub">${t}</span></span><span class="dots" aria-hidden="true">${dots}</span></button></li>`;
+  }).join(''):'<li class="meta" style="padding:8px">아직 들어온 학생이 없어요.</li>';
 }
 function buildWs(){
-  const ws=$('#ws'),st=S.students.find(s=>s.id===S.sel),r=S.round;
+  const ws=$('#ws'),st=S.subs.get(S.sel),r=S.round,sid=S.sel;
   built=S.sel+'|'+r;S.dirty.clear();
-  if(!st){ws.innerHTML=S.students.length?'<div class="empty"><b>학생을 골라 주세요</b>목록에서 학생을 누르면 글과 피드백이 열려요.</div>':`<div class="empty"><b>학생을 추가해 주세요</b>${S.admin?'‘학생 추가’로 번호나 가명을 넣은 뒤, 학생 글을 붙여 넣으면 시작할 수 있어요.':'선생님이 학생을 추가하면 여기에 나타나요.'}</div>`;return}
-  ws.innerHTML=`<div class="wsh"><h2>${esc(st.label)} <span class="meta">${r}차 ${r===1?'글':'수정본'}</span></h2><div class="wsa"><button type="button" class="btn ghost" id="dlOne">${dl?'이 학생 피드백지 받기':'이 학생 피드백지 복사'}</button>${S.admin?'<button type="button" class="btn ghost danger" id="delS">학생 삭제</button>':''}</div></div>
-  <div class="sheet"><div class="bar"><b>학생 글</b><span class="meta" id="cc"></span><span class="meta" id="em"></span></div>
-  <textarea class="essay" id="essay" aria-label="학생 글" placeholder="${S.admin?'학생이 쓴 글을 여기에 붙여 넣으세요. 입력을 멈추면 자동으로 저장돼요.':'아직 글이 없어요.'}"${S.admin?'':' readonly'}></textarea>
+  if(!st){ws.innerHTML=S.subs.size?'<div class="empty"><b>학생을 골라 주세요</b>목록에서 학생을 누르면 글과 피드백이 열려요.</div>':'<div class="empty"><b>아직 들어온 학생이 없어요</b>이 페이지를 학생들과 ‘참여’ 권한으로 공유해 주세요. 학생이 번호나 가명을 적고 글을 쓰기 시작하면 여기에 나타나요.</div>';return}
+  ws.innerHTML=`<div class="wsh"><h2>${esc(st.label)} <span class="meta">${r}차 ${r===1?'글':'수정본'}</span></h2><div class="wsa">
+  ${S.owner?'<button type="button" class="btn" id="sendB">학생에게 피드백 보내기</button><button type="button" class="btn ghost" id="reopB" hidden>다시 쓰게 하기</button>':''}
+  <button type="button" class="btn ghost" id="dlOne">${dl?'피드백지 받기':'피드백지 복사'}</button>${S.owner?'<button type="button" class="btn ghost danger" id="delS">학생 삭제</button>':''}</div></div>
+  <p class="meta" id="sentM" style="margin:-6px 0 12px"></p>
+  <div class="sheet"><div class="bar"><b>학생 글</b><span class="tag" id="stTag"></span><span class="meta" id="cc"></span><span class="meta" id="em"></span></div>
+  <div class="read" id="essayR"></div>
   ${r===2?'<details id="dbox" open><summary>1차 글과 달라진 부분</summary><div class="diff" id="diff"></div></details>':''}</div>
   <div class="pens">${SLOTS.map(sl=>`<article class="pen" data-slot="${sl}" style="--pen:var(--${sl})"><h3><span>${esc(penName(sl))}</span></h3>
-  <textarea id="t-${sl}" aria-label="${esc(penName(sl))}"${sl==='ai'?' placeholder="‘AI로 만들기’를 누르면 초안이 생겨요. 읽어 보고 고쳐 써도 돼요."':''}${S.canW?'':' readonly'}></textarea>
-  <div class="row">${sl==='ai'&&sample&&S.canW?'<button type="button" class="btn ghost" id="gen">AI로 만들기</button>':''}<span class="meta" id="m-${sl}"></span></div></article>`).join('')}</div>`;
-  $('#essay').addEventListener('input',()=>{S.dirty.add('essay');count();queue('essay')});
-  SLOTS.forEach(sl=>$('#t-'+sl).addEventListener('input',()=>{S.dirty.add(sl);queue(sl)}));
-  const g=$('#gen');if(g)g.addEventListener('click',()=>genOne(S.sel,S.round));
-  $('#dlOne').addEventListener('click',()=>exportSheets([S.sel]));
-  const d=$('#delS');if(d)d.addEventListener('click',()=>{$('#delT').textContent=`‘${st.label}’ 학생을 지울까요?`;openOv('ovDel')});
+  <textarea id="t-${sl}" aria-label="${esc(penName(sl))}"${sl==='ai'?' placeholder="학생이 글을 제출하면 ‘AI로 만들기’로 초안을 만들 수 있어요. 읽어 보고 고쳐 써도 돼요."':''}></textarea>
+  <div class="row">${sl==='ai'&&sample?'<button type="button" class="btn ghost" id="gen">AI로 만들기</button>':''}<span class="meta" id="m-${sl}"></span></div></article>`).join('')}</div>`;
+  SLOTS.forEach(sl=>{const t=$('#t-'+sl);t.addEventListener('input',()=>{S.dirty.add(sl);const v=t.value;queue(sl,()=>saveDraft(sl,sid,r,v))})});
+  const g=$('#gen');if(g)g.addEventListener('click',()=>genOne(sid,r));
+  $('#dlOne').addEventListener('click',()=>exportSheets([sid]));
+  const sb=$('#sendB');if(sb)sb.addEventListener('click',()=>sendFb(sid,r));
+  const rb=$('#reopB');if(rb)rb.addEventListener('click',()=>ask(`${st.label}에게 ${r}차 글을 다시 열어 줄까요?`,'학생이 제출한 글을 다시 고칠 수 있게 돼요. 다 고치면 학생이 다시 제출해요.','다시 열기',async()=>{try{await db.doc('subs/'+sid).update({['s'+r]:null})}catch(e){note(errMsg(e))}}));
+  const d=$('#delS');if(d)d.addEventListener('click',()=>ask(`‘${st.label}’ 학생을 지울까요?`,'이 학생의 1차·2차 글과 모든 피드백이 함께 지워져요. 되돌릴 수 없어요.','지우기',async()=>{
+    const paths=['subs/'+sid,'sent/'+sid,...[1,2].flatMap(r=>SLOTS.map(sl=>'drafts/'+dKey(sid,r,sl)))];
+    try{for(const p of paths)await db.doc(p).delete()}catch(e){note('지우지 못했어요.')}}));
   fillWs();
 }
-function count(){const t=$('#essay');if(t)$('#cc').textContent=t.value.replace(/\s/g,'').length+'자 (공백 제외)'}
 function meta(k,d){
   if(S.dirty.has(k))return;
   if(!d||!d.updatedAt){stat(k,'');return}
@@ -172,13 +285,21 @@ function meta(k,d){
   stat(k,[d.src==='ai'?'AI가 쓴 초안':'마지막 저장',nm,when(d.updatedAt)].filter(Boolean).join(' · '));
 }
 function fillWs(){
-  if(!S.sel||!$('#essay'))return;
-  const sid=S.sel,r=S.round,ta=$('#essay');
-  if(!S.dirty.has('essay'))ta.value=essay(sid,r);
-  count();meta('essay',S.essays.get(eKey(sid,r)));
-  SLOTS.forEach(sl=>{if(S.busy.has(fKey(sid,r,sl)))return;if(!S.dirty.has(sl))$('#t-'+sl).value=fbt(sid,r,sl);meta(sl,S.fb.get(fKey(sid,r,sl)))});
-  const g=$('#gen');if(g){g.textContent=fbt(sid,r,'ai').trim()?'AI로 다시 만들기':'AI로 만들기';g.disabled=!essay(sid,r).trim()||S.busy.has(fKey(sid,r,'ai'))}
-  const df=$('#diff');if(df){const a=essay(sid,1),b=essay(sid,2);df.innerHTML=a.trim()&&b.trim()?diff(a,b):'<span class="meta">1차 글과 2차 글이 모두 있어야 비교할 수 있어요.</span>'}
+  if(!S.sel||!$('#essayR'))return;
+  const sid=S.sel,r=S.round,s=sub(sid),t=txt(sid,r),ok=subm(sid,r);
+  const er=$('#essayR');
+  er.textContent=t||(r===2&&!sentR(sid,1)?'1차 피드백을 보낸 뒤에 학생이 수정본을 써요.':'아직 쓴 글이 없어요.');
+  er.classList.toggle('draft',!ok);
+  const [tg,c]=status(sid,r);const tag=$('#stTag');tag.textContent=ok?'제출함':tg==='보냄'?'제출함':t.trim()?'제출 전 · 쓰는 중':'제출 전';tag.className='tag'+(ok?' go':'');
+  $('#cc').textContent=t?t.replace(/\s/g,'').length+'자':'';
+  $('#em').textContent=ok?'제출 '+when(s['s'+r]):'';
+  SLOTS.forEach(sl=>{if(S.busy.has(dKey(sid,r,sl)))return;if(!S.dirty.has(sl))$('#t-'+sl).value=dft(sid,r,sl);meta(sl,S.drafts.get(dKey(sid,r,sl)))});
+  const g=$('#gen');if(g){g.textContent=dft(sid,r,'ai').trim()?'AI로 다시 만들기':'AI로 만들기';g.disabled=!ok||S.busy.has(dKey(sid,r,'ai'))}
+  const sn=sentR(sid,r),changed=sn&&SLOTS.some(sl=>(sn[sl]||'')!==dft(sid,r,sl));
+  $('#sentM').textContent=sn?`학생에게 보냄 ${when(sn.at)}${changed?' · 보낸 뒤 고친 내용이 있어요. 다시 보내면 학생 화면도 바뀌어요.':''}`:ok?'아직 학생에게 보내지 않았어요. 피드백을 다 쓰면 ‘학생에게 피드백 보내기’를 눌러 주세요.':'';
+  const sb=$('#sendB');if(sb){sb.disabled=!ok||!SLOTS.some(sl=>dft(sid,r,sl).trim());sb.textContent=sn?(changed?'고친 피드백 다시 보내기':'보냄'):'학생에게 피드백 보내기';if(sn&&!changed)sb.disabled=true}
+  const rb=$('#reopB');if(rb)rb.hidden=!ok||!!sn;
+  const df=$('#diff');if(df){const a=txt(sid,1),b=txt(sid,2);df.innerHTML=a.trim()&&b.trim()?diff(a,b):'<span class="meta">1차 글과 2차 글이 모두 있어야 비교할 수 있어요.</span>'}
 }
 async function loadNames(ids){
   if(!user)return;
@@ -187,26 +308,26 @@ async function loadNames(ids){
   try{const ps=await user.profiles(ids);ids.forEach(i=>{S.names[i]=(ps&&ps[i]&&ps[i].name)||''})}catch(e){ids.forEach(i=>{S.names[i]=''})}
   fillWs();
 }
-function queue(k){
-  const sid=S.sel,r=S.round,el=field(k);
-  clearTimeout(timers[k]);stat(k,'입력 중…');
-  pending[k]=()=>save(k,sid,r,el.value);
-  timers[k]=setTimeout(()=>{const f=pending[k];delete pending[k];if(f)f()},1200);
+function saveDraft(sl,sid,r,text){
+  const path='drafts/'+dKey(sid,r,sl);
+  return chain1(path,()=>db.doc(path).set({text,updatedAt:Date.now(),by:S.me,src:sl==='ai'?'edited':'human'})).then(()=>{
+    if(S.sel!==sid||S.round!==r)return;
+    const el=$('#t-'+sl);if(el&&el.value===text&&!pending[sl])S.dirty.delete(sl);
+    stat(sl,'저장됨');
+  },e=>{if(S.sel===sid&&S.round===r)stat(sl,errMsg(e))});
 }
-function flush(){Object.keys(pending).forEach(k=>{clearTimeout(timers[k]);const f=pending[k];delete pending[k];f()})}
-function save(k,sid,r,text){
-  const path=k==='essay'?'essays/'+eKey(sid,r):'feedback/'+fKey(sid,r,k);
-  const body=k==='essay'?{sid,round:r,text,updatedAt:Date.now(),by:S.me}:{sid,round:r,slot:k,text,updatedAt:Date.now(),by:S.me,src:k==='ai'?'edited':'human'};
-  chain[path]=(chain[path]||Promise.resolve()).then(()=>db.doc(path).set(body)).then(()=>{
-    if(!live(sid,r))return;
-    const el=field(k);if(el&&el.value===text&&!pending[k])S.dirty.delete(k);
-    stat(k,'저장됨');
-  },e=>{if(live(sid,r))stat(k,e&&e.code==='invalid_argument'?'저장 권한이 없어요.':e&&e.code==='quota_exceeded'?'저장 공간이 가득 찼어요.':'저장하지 못했어요. 다시 입력해 보세요.')});
-  return chain[path];
+async function sendFb(sid,r){
+  await flush();
+  const s=sub(sid),o={at:Date.now()};SLOTS.forEach(sl=>o[sl]=dft(sid,r,sl));
+  const missing=SLOTS.filter(sl=>!o[sl].trim()).map(penName);
+  ask(`${s.label}에게 ${r}차 피드백을 보낼까요?`,(missing.length?`${missing.join(', ')}은(는) 비어 있어요. `:'')+(r===1?'보내면 학생 화면에 피드백이 나타나고, 학생이 수정본을 쓸 수 있게 돼요.':'보내면 학생 화면에 최종 피드백이 나타나요.'),'보내기',async()=>{
+    try{const cur=S.sent.get(sid)||{};await db.doc('sent/'+sid).set(Object.assign({},cur,{['r'+r]:o}));note('')}catch(e){note(errMsg(e))}
+  });
 }
 function buildPrompt(sid,r){
-  const prev=r===2?essay(sid,1):'';
-  const prevFb=r===2?SLOTS.map(sl=>fbt(sid,1,sl).trim()?`(${penName(sl)})\n${fbt(sid,1,sl)}`:'').filter(Boolean).join('\n\n'):'';
+  const prev=r===2?txt(sid,1):'';
+  const p1=sentR(sid,1)||{};
+  const prevFb=r===2?SLOTS.map(sl=>(p1[sl]||'').trim()?`(${penName(sl)})\n${p1[sl]}`:'').filter(Boolean).join('\n\n'):'';
   return `너는 중학생의 과학 논증문을 읽고 피드백을 주는 과학 선생님이다.
 
 [과제]
@@ -231,7 +352,7 @@ ${prev||'(없음)'}
 ${prevFb||'(없음)'}
 `:''}
 [${r===2?'수정한 2차 글':'학생 글'}]
-${essay(sid,r)}
+${txt(sid,r)}
 
 [쓰는 방법]
 - 선생님이 글 아래에 적어 주는 일반적인 피드백처럼, 제목이나 목록 없이 이어지는 글 한두 문단으로 쓴다.
@@ -241,30 +362,31 @@ ${essay(sid,r)}
 - 점수나 등급은 매기지 않는다. 학생 글을 대신 고쳐 써 주지 말고 방향만 알려 준다.
 - 인사말이나 맺음말은 쓰지 않는다.`;
 }
+const liveWs=(sid,r)=>sid===S.sel&&r===S.round&&$('#t-ai');
 async function genOne(sid,r){
-  const key=fKey(sid,r,'ai');
-  if(!sample||S.busy.has(key)||!essay(sid,r).trim())return null;
-  flush();S.busy.add(key);
-  if(live(sid,r)){const t=$('#t-ai');t.classList.add('busy');t.value='';stat('ai','AI가 글을 읽는 중…');const g=$('#gen');if(g)g.disabled=true}
+  const key=dKey(sid,r,'ai');
+  if(!sample||S.busy.has(key)||!subm(sid,r)||!txt(sid,r).trim())return null;
+  await flush();S.busy.add(key);
+  if(liveWs(sid,r)){const t=$('#t-ai');t.classList.add('busy');t.value='';stat('ai','AI가 글을 읽는 중…');const g=$('#gen');if(g)g.disabled=true}
   let err=null;
   try{
-    const res=await sample(buildPrompt(sid,r),{modelTier:'default',onText:({text})=>{if(live(sid,r))$('#t-ai').value=text}});
+    const res=await sample(buildPrompt(sid,r),{modelTier:'default',onText:({text})=>{if(liveWs(sid,r))$('#t-ai').value=text}});
     const out=String(res&&res.text||'').trim();
     if(!out)throw {code:'empty'};
-    await db.doc('feedback/'+key).set({sid,round:r,slot:'ai',text:out,updatedAt:Date.now(),by:S.me,src:'ai'});
+    await db.doc('drafts/'+key).set({text:out,updatedAt:Date.now(),by:S.me,src:'ai'});
   }catch(e){
     err=(e&&e.code)||'error';
     if(err==='not_granted'){sample=null;$('#bulk').hidden=true;const g=$('#gen');if(g)g.remove()}
-    if(live(sid,r))stat('ai',err==='rate_limited'?'요청이 많아요. 잠시 뒤에 다시 눌러 주세요.':err==='not_granted'?'AI 사용이 허용되지 않았어요.':'AI 피드백을 만들지 못했어요.');
+    if(liveWs(sid,r))stat('ai',err==='rate_limited'?'요청이 많아요. 잠시 뒤에 다시 눌러 주세요.':err==='not_granted'?'AI 사용이 허용되지 않았어요.':'AI 피드백을 만들지 못했어요.');
   }
   S.busy.delete(key);
-  if(live(sid,r)){$('#t-ai').classList.remove('busy');S.dirty.delete('ai');const keep=err?$('#m-ai').textContent:'';fillWs();if(err)stat('ai',keep)}
+  if(liveWs(sid,r)){$('#t-ai').classList.remove('busy');S.dirty.delete('ai');const keep=err?$('#m-ai').textContent:'';fillWs();if(err)stat('ai',keep)}
   return err;
 }
 async function bulk(){
   if(running){stop=true;return}
-  const r=S.round,todo=sorted().filter(s=>essay(s.id,r).trim()&&!fbt(s.id,r,'ai').trim());
-  if(!todo.length){note(`${r}차 글이 있는 학생은 모두 AI 피드백을 받았어요.`);return}
+  const r=S.round,todo=sorted().filter(s=>subm(s.id,r)&&!dft(s.id,r,'ai').trim());
+  if(!todo.length){note(`${r}차 글을 제출한 학생은 모두 AI 피드백 초안이 있어요.`);return}
   running=true;stop=false;const b=$('#bulk');b.textContent='멈추기';
   let done=0,msg='';
   for(const s of todo){
@@ -275,7 +397,7 @@ async function bulk(){
     done++;
   }
   running=false;b.textContent='AI 피드백 모두 만들기';
-  note(msg||`AI 피드백 ${done}개를 만들었어요. 학생에게 주기 전에 읽어 보고 필요하면 고쳐 주세요.`);
+  note(msg||`AI 피드백 초안 ${done}개를 만들었어요. 읽어 보고 필요하면 고친 뒤 학생에게 보내 주세요.`);
 }
 function diff(a,b){
   const tk=s=>s.replace(/\r/g,'').replace(/\n+/g,' \n ').split(/[ \t]+/).filter(Boolean).slice(0,1500);
@@ -289,72 +411,69 @@ function diff(a,b){
 }
 function sheetHtml(ids){
   const r=S.round;
-  const body=ids.map(id=>{const s=S.students.find(x=>x.id===id);if(!s)return'';
-    return `<section class="pg"><h1>논증문 피드백지 · ${r}차</h1><p class="who">${esc(s.label)}</p><p class="q"><b>과제</b> ${esc(cfg('question'))}</p><h2>내 글</h2><div class="box">${esc(essay(id,r))||'(글 없음)'}</div><h2>세 가지 피드백</h2>${SLOTS.map(sl=>`<div class="box ${sl}"><b>${esc(penName(sl))}</b>\n${esc(fbt(id,r,sl))||'(아직 없음)'}</div>`).join('')}<h2>${r===1?'다시 쓰기 계획':'달라진 점 돌아보기'}</h2><p>${r===1?'세 피드백을 읽고, 내 글에서 고칠 점 세 가지를 적어 보세요.':'1차와 비교해 가장 나아진 점과 아직 아쉬운 점을 적어 보세요.'}</p><div class="lines"></div></section>`}).join('');
-  return `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>피드백지 ${r}차</title><style>body{font:15px/1.7 "Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#111;margin:24px}.pg{max-width:760px;margin:0 auto 48px;page-break-after:always}h1{font-size:22px;margin:0}.who{font-size:18px;font-weight:700;margin:4px 0}.q{color:#444}h2{font-size:16px;margin:22px 0 8px}.box{border:1px solid #ccc;border-radius:8px;padding:12px 14px;margin:8px 0;white-space:pre-wrap}.box b{display:block;margin-bottom:2px}.ai b{color:#1f5bd1}.e1 b{color:#c3263a}.e2 b{color:#a35a00}.lines{height:9em;background:repeating-linear-gradient(to bottom,transparent 0 calc(1.8em - 1px),#bbb calc(1.8em - 1px) 1.8em)}@media print{body{margin:0}}</style></head><body>${body}</body></html>`;
+  const body=ids.map(id=>{const s=S.subs.get(id);if(!s)return'';
+    return `<section class="pg"><h1>논증문 피드백지 · ${r}차</h1><p class="who">${esc(s.label)}</p><p class="q"><b>과제</b> ${esc(cfg('question'))}</p><h2>내 글</h2><div class="box">${esc(txt(id,r))||'(글 없음)'}</div><h2>세 가지 피드백</h2>${SLOTS.map(sl=>`<div class="box ${sl}"><b>${esc(penName(sl))}</b>\n${esc(dft(id,r,sl))||'(아직 없음)'}</div>`).join('')}</section>`}).join('');
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>피드백지 ${r}차</title><style>body{font:15px/1.7 "Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#111;margin:24px}.pg{max-width:760px;margin:0 auto 48px;page-break-after:always}h1{font-size:22px;margin:0}.who{font-size:18px;font-weight:700;margin:4px 0}.q{color:#444}h2{font-size:16px;margin:22px 0 8px}.box{border:1px solid #ccc;border-radius:8px;padding:12px 14px;margin:8px 0;white-space:pre-wrap}.box b{display:block;margin-bottom:2px}.ai b{color:#1f5bd1}.e1 b{color:#c3263a}.e2 b{color:#a35a00}@media print{body{margin:0}}</style></head><body>${body}</body></html>`;
 }
 function sheetText(ids){
   const r=S.round;
-  return ids.map(id=>{const s=S.students.find(x=>x.id===id);if(!s)return'';
-    return [`[논증문 피드백지 · ${r}차] ${s.label}`,`과제: ${cfg('question')}`,'',`내 글\n${essay(id,r)||'(글 없음)'}`,...SLOTS.map(sl=>`\n${penName(sl)}\n${fbt(id,r,sl)||'(아직 없음)'}`)].join('\n')}).filter(Boolean).join('\n\n────────\n\n');
+  return ids.map(id=>{const s=S.subs.get(id);if(!s)return'';
+    return [`[논증문 피드백지 · ${r}차] ${s.label}`,`과제: ${cfg('question')}`,'',`내 글\n${txt(id,r)||'(글 없음)'}`,...SLOTS.map(sl=>`\n${penName(sl)}\n${dft(id,r,sl)||'(아직 없음)'}`)].join('\n')}).filter(Boolean).join('\n\n────────\n\n');
 }
 async function exportSheets(ids){
-  flush();ids=ids.filter(id=>S.students.some(s=>s.id===id));
+  await flush();ids=ids.filter(id=>S.subs.has(id));
   if(!ids.length){note('내보낼 학생이 없어요.');return}
-  const r=S.round,one=ids.length===1?S.students.find(s=>s.id===ids[0]):null;
+  const r=S.round,one=ids.length===1?S.subs.get(ids[0]):null;
   const name=`피드백지_${r}차_${one?String(one.label).replace(/[\\/:*?"<>|\s]+/g,'_'):'전체'}.html`;
   if(dl){try{await dl.save({filename:name,data:sheetHtml(ids)});note('피드백지를 받았어요. 파일을 열어 인쇄하거나 PDF로 저장하세요.')}catch(e){note(e&&e.code==='declined'?'':'피드백지를 받지 못했어요.')}return}
   try{await navigator.clipboard.writeText(sheetText(ids));note('피드백지 내용을 복사했어요. 문서에 붙여 넣어 쓰세요.')}catch(e){note('이 화면에서는 내려받기와 복사를 할 수 없어요.')}
 }
 function onData(){
-  if(S.sel&&!S.students.some(s=>s.id===S.sel))S.sel=null;
-  if(!S.sel&&S.students.length){S.sel=sorted()[0].id;remember()}
+  if(S.sel&&!S.subs.has(S.sel))S.sel=null;
+  if(!S.sel&&S.subs.size){S.sel=sorted()[0].id;remember()}
   renderList();
-  if(built!==S.sel+'|'+S.round||(S.sel&&!$('#essay')))buildWs();else fillWs();
+  if(built!==S.sel+'|'+S.round||(S.sel&&!$('#essayR')))buildWs();else fillWs();
 }
-function select(id){if(id===S.sel)return;flush();S.sel=id;remember();renderList();buildWs()}
+async function select(id){if(id===S.sel)return;await flush();S.sel=id;remember();renderList();buildWs()}
 
-$('#list').addEventListener('click',e=>{const b=e.target.closest('.stu');if(b)select(b.dataset.id)});
-$('#rounds').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||+b.dataset.r===S.round)return;flush();S.round=+b.dataset.r;remember();renderTop();renderList();buildWs()});
-$('#bulk').addEventListener('click',bulk);
-$('#dlAll').addEventListener('click',()=>exportSheets(sorted().map(s=>s.id)));
-$('#addB').addEventListener('click',()=>openOv('ovAdd'));
-$('#setB').addEventListener('click',()=>{$('#sQ').value=cfg('question');$('#sC').value=cfg('criteria');$('#sX').value=cfg('context');$('#sE1').value=cfg('e1Name');$('#sE2').value=cfg('e2Name');openOv('ovSet')});
 document.addEventListener('click',e=>{if(e.target.matches('[data-close]')||e.target.classList.contains('ov'))closeOv()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOv()});
-$('#fAdd').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const names=$('#addT').value.split('\n').map(s=>s.trim().slice(0,40)).filter(Boolean);
-  if(!names.length)return;
-  let o=Math.max(0,...S.students.map(s=>s.order||0));const base='s'+Date.now().toString(36);
-  try{for(let i=0;i<names.length;i++)await db.doc('students/'+base+i).set({label:names[i],order:++o,createdAt:Date.now()});$('#addT').value='';closeOv();select(base+'0')}
-  catch(err){note(err&&err.code==='quota_exceeded'?'저장 공간이 가득 찼어요.':'학생을 추가하지 못했어요.')}
-});
+$('#okGo').addEventListener('click',()=>{const f=okFn;okFn=null;closeOv();if(f)f()});
 $('#fSet').addEventListener('submit',async e=>{
   e.preventDefault();
   try{await db.doc('config/main').set({question:$('#sQ').value.trim(),criteria:$('#sC').value.trim(),context:$('#sX').value.trim(),e1Name:$('#sE1').value.trim(),e2Name:$('#sE2').value.trim()});closeOv()}
   catch(err){note('설정을 저장하지 못했어요.')}
 });
-$('#delOk').addEventListener('click',async()=>{
-  const sid=S.sel;closeOv();if(!sid)return;
-  const paths=['students/'+sid,...[1,2].flatMap(r=>['essays/'+eKey(sid,r),...SLOTS.map(sl=>'feedback/'+fKey(sid,r,sl))])];
-  try{for(const p of paths)await db.doc(p).delete()}catch(err){note('지우지 못했어요.')}
-});
+window.addEventListener('pagehide',()=>{flush()});
 
 async function init(){
   const use=n=>window.claude&&window.claude.use?window.claude.use(n).catch(()=>null):Promise.resolve(null);
-  const lt=setTimeout(()=>note('아직 데이터를 불러오지 못했어요. 연결을 확인해 주세요.'),10000);
+  let loaded=false;
+  const lt=setTimeout(()=>{if(!loaded)note('아직 데이터를 불러오지 못했어요. 연결을 확인해 주세요.')},10000);
+  const done=()=>{if(loaded)return;loaded=true;clearTimeout(lt);if($('#note').textContent.startsWith('아직'))note('')};
   [db,user,sample,dl]=await Promise.all(['db','user','sample','downloads'].map(use));
-  if(!db){clearTimeout(lt);note('');$('#ws').innerHTML='<div class="empty"><b>저장소에 연결할 수 없어요</b>이 앱은 공유받은 사람이 claude.ai에 로그인한 상태에서 열 때 동작해요.</div>';return}
-  if(user){try{S.me=await user.id();S.admin=!!(await user.canEdit());const c=await user.can('data.write');S.canW=c===null?true:!!c}catch(e){}}else S.admin=true;
-  $('#addB').hidden=!S.admin;$('#setB').hidden=!S.admin;$('#bulk').hidden=!(sample&&S.canW);
-  if(!dl)$('#dlAll').textContent='피드백지 모두 복사';
-  if(!S.admin&&!S.canW)note('보기 권한만 있어요. 피드백을 쓰려면 선생님에게 편집 권한을 받아 주세요.');
-  const fail=e=>note(e&&e.code==='revoked'?'접근 권한이 바뀌었어요.':'데이터를 불러오지 못했어요.');
-  db.doc('config/main').onSnapshot(s=>{S.cfg=s.exists?s.data():{};renderTop()},fail);
-  db.collection('students').onSnapshot(qs=>{if(!qs.metadata.fromCache){clearTimeout(lt);if($('#note').textContent.startsWith('아직'))note('')}S.students=qs.docs.map(d=>Object.assign({},d.data(),{id:d.id}));onData()},fail);
-  db.collection('essays').onSnapshot(qs=>{S.essays=new Map(qs.docs.map(d=>[d.id,d.data()]));onData()},fail);
-  db.collection('feedback').onSnapshot(qs=>{S.fb=new Map(qs.docs.map(d=>[d.id,d.data()]));onData()},fail);
+  if(!db||!user){clearTimeout(lt);$('#main').innerHTML='<div class="solo"><div class="empty"><b>저장소에 연결할 수 없어요</b>이 페이지는 claude.ai에 로그인한 상태에서 열 때 동작해요.</div></div>';return}
+  try{S.me=await user.id();S.admin=!!(await user.canEdit());S.owner=!!(await user.isOwner())}catch(e){}
+  const fail=e=>{done();note(e&&e.code==='revoked'?'접근 권한이 바뀌었어요.':'데이터를 불러오지 못했어요.')};
+  db.doc('config/main').onSnapshot(s=>{S.cfg=s.exists?s.data():{};renderTop();if(S.admin)fillWs();else{stuBuilt=null;renderStudent()}},fail);
+  if(S.admin){
+    $('#acts').hidden=false;$('#setB').hidden=!S.owner;$('#bulk').hidden=!sample;
+    if(!dl)$('#dlAll').textContent='피드백지 모두 복사';
+    $('#main').className='wrap';
+    $('#main').innerHTML='<aside class="roster"><div class="rh"><span>학생</span><span>AI · 전문가 1 · 2</span></div><ul id="list"></ul></aside><section class="ws" id="ws"><div class="empty"><b>불러오는 중</b>잠시만 기다려 주세요.</div></section>';
+    $('#list').addEventListener('click',e=>{const b=e.target.closest('.stu');if(b)select(b.dataset.id)});
+    $('#rounds').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||+b.dataset.r===S.round)return;await flush();S.round=+b.dataset.r;remember();renderTop();renderList();buildWs()});
+    $('#bulk').addEventListener('click',bulk);
+    $('#dlAll').addEventListener('click',()=>exportSheets(sorted().map(s=>s.id)));
+    $('#setB').addEventListener('click',()=>{$('#sQ').value=cfg('question');$('#sC').value=cfg('criteria');$('#sX').value=cfg('context');$('#sE1').value=cfg('e1Name');$('#sE2').value=cfg('e2Name');openOv('ovSet')});
+    db.collection('subs').onSnapshot(qs=>{if(!qs.metadata.fromCache)done();S.subs=new Map(qs.docs.map(d=>[d.id,d.data()]));onData()},fail);
+    db.collection('drafts').onSnapshot(qs=>{S.drafts=new Map(qs.docs.map(d=>[d.id,d.data()]));onData()},fail);
+    db.collection('sent').onSnapshot(qs=>{S.sent=new Map(qs.docs.map(d=>[d.id,d.data()]));onData()},fail);
+  }else{
+    if(!S.me){clearTimeout(lt);$('#main').innerHTML='<div class="solo"><div class="empty"><b>로그인이 필요해요</b>claude.ai에 로그인한 뒤 다시 열어 주세요.</div></div>';return}
+    db.doc('subs/'+S.me).onSnapshot(s=>{if(!s.metadata.fromCache)done();S.mine=s.exists?s.data():null;renderStudent()},fail);
+    db.doc('sent/'+S.me).onSnapshot(s=>{S.mySent=s.exists?s.data():null;renderStudent()},fail);
+  }
 }
 renderTop();init();
 }
