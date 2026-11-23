@@ -13,11 +13,8 @@
 from __future__ import annotations
 
 import difflib
-import hashlib
-import hmac
 import html
 import os
-import secrets as pysecrets
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -183,71 +180,35 @@ def student_delete(sid: int):
         c.execute(delete(T_STUDENTS).where(T_STUDENTS.c.id == sid))
 
 
-# ───────────────────────── 로그인 ─────────────────────────
-def hash_pin(pin: str, salt: str | None = None) -> str:
-    salt = salt or pysecrets.token_hex(8)
-    h = hashlib.pbkdf2_hmac("sha256", pin.encode(), salt.encode(), 100_000).hex()
-    return f"{salt}${h}"
-
-
-def check_pin(pin: str, stored: str) -> bool:
-    salt, _, _ = stored.partition("$")
-    return hmac.compare_digest(hash_pin(pin, salt), stored)
-
-
-def same(a: str, b: str) -> bool:
-    return bool(b) and hmac.compare_digest(a.encode(), b.encode())
-
-
+# ───────────────────────── 들어가기 (비밀번호 없음) ─────────────────────────
 def login_screen():
     c = cfg_all()
     st.title("나노입자실험_글쓰기_피드백")
     st.caption(c["question"])
     tab_s, tab_t = st.tabs(["학생", "교사 · 전문가"])
     with tab_s:
-        st.write("선생님이 알려 준 **수업 코드**와 내 **번호나 가명**을 적어 주세요. 실명은 쓰지 않아요.")
-        st.write("처음 들어올 때 정한 **비밀번호 4자리**로 다음에도 들어와요.")
+        st.write("선생님이 알려 준 **번호나 가명**을 적어 주세요. 실명은 쓰지 않아요. 다음에도 같은 이름으로 들어오면 이어서 쓸 수 있어요.")
         with st.form("stu_login"):
-            code = st.text_input("수업 코드", type="password")
             label = st.text_input("번호 또는 가명", max_chars=40, placeholder="예: 3번")
-            pin = st.text_input("비밀번호 4자리 (처음이면 새로 정해요)", type="password", max_chars=4)
             ok = st.form_submit_button("들어가기", type="primary")
         if ok:
             label = label.strip()
-            if not same(code.strip(), secret("CLASS_CODE")):
-                st.error("수업 코드가 맞지 않아요.")
-            elif not label:
+            if not label:
                 st.error("번호나 가명을 적어 주세요.")
-            elif not (pin.isdigit() and len(pin) == 4):
-                st.error("비밀번호는 숫자 4자리로 적어 주세요.")
             else:
-                ex = rows(select(T_STUDENTS).where(T_STUDENTS.c.label == label))
-                if ex:
-                    if check_pin(pin, ex[0]["pin_hash"]):
-                        st.session_state.update(role="student", sid=ex[0]["id"])
-                        st.rerun()
-                    else:
-                        st.error("비밀번호가 맞지 않아요. 같은 이름을 다른 친구가 쓰고 있다면 선생님에게 말해 주세요.")
-                else:
-                    q(insert(T_STUDENTS).values(label=label, pin_hash=hash_pin(pin), created_at=time.time(), t1="", t2=""))
-                    sid = rows(select(T_STUDENTS.c.id).where(T_STUDENTS.c.label == label))[0]["id"]
-                    st.session_state.update(role="student", sid=sid)
-                    st.rerun()
+                ex = rows(select(T_STUDENTS.c.id).where(T_STUDENTS.c.label == label))
+                if not ex:
+                    q(insert(T_STUDENTS).values(label=label, pin_hash="", created_at=time.time(), t1="", t2=""))
+                    ex = rows(select(T_STUDENTS.c.id).where(T_STUDENTS.c.label == label))
+                st.session_state.update(role="student", sid=ex[0]["id"])
+                st.rerun()
     with tab_t:
-        with st.form("staff_login"):
-            who = st.radio("누구인가요?", ["teacher", "e1", "e2"],
-                           format_func=lambda k: "교사" if k == "teacher" else c[k + "Name"], horizontal=True)
-            pw = st.text_input("비밀번호", type="password")
-            ok2 = st.form_submit_button("들어가기", type="primary")
-        if ok2:
-            key = {"teacher": "TEACHER_PASSWORD", "e1": "EXPERT1_PASSWORD", "e2": "EXPERT2_PASSWORD"}[who]
-            if same(pw, secret(key)):
+        st.write("누구인지 골라 주세요.")
+        cols = st.columns(3)
+        for col, who in zip(cols, ["teacher", "e1", "e2"]):
+            if col.button("교사" if who == "teacher" else c[who + "Name"], key=f"go_{who}", use_container_width=True):
                 st.session_state.update(role=who)
                 st.rerun()
-            else:
-                st.error("비밀번호가 맞지 않아요.")
-        if not secret("TEACHER_PASSWORD"):
-            st.warning("아직 비밀번호가 설정되지 않았어요. secrets.toml에 TEACHER_PASSWORD 등을 넣어 주세요.")
 
 
 # ───────────────────────── 공통 도우미 ─────────────────────────
